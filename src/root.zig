@@ -2,7 +2,7 @@
 const std = @import("std");
 const Io = std.Io;
 const ecs = @import("mr_ecs");
-const db = @import("db/core.zig");
+pub const db = @import("db/core.zig");
 
 /// This is a documentation comment to explain the `printAnotherMessage` function below.
 ///
