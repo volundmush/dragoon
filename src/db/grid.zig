@@ -13,21 +13,22 @@ pub const Region = struct {
     shape: i64,
     priority: u8,
     // still working out the rest...
-
+    tile: []const u8,
 };
 
-/// A Tile exists at a specific point on the grid and overrides any underlying Regions.
-pub const Tile = struct {
+/// A Spot exists at a specific point on the grid and overrides any underlying Regions.
+pub const Spot = struct {
     point: GridPoint,
     // still working out the rest...
+    tile: []const u8,
 };
 
-/// Returned by a search function to determine whichh tile and region are relevant at a given point.
-pub const Place = struct { tile: *Tile, region: *Region };
+/// Returned by a search function to determine whichh spot and region are relevant at a given point.
+pub const Place = struct { spot: *Spot, region: *Region };
 
 /// The Grid is the main map data structure.
 pub const Grid = struct {
-    tiles: std.AutoHashMap(GridPoint, Tile),
+    spots: std.AutoHashMap(GridPoint, Spot),
     regions: std.AutoHashMap(GridPoint, Region),
     /// If a character is entering this region without providing coordinates, what are the defaults?
     default_point: GridPoint,
