@@ -26,6 +26,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const zlua_dep = b.dependency("zlua", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     // This creates a module, which represents a collection of source files alongside
     // some compilation options, such as optimization mode and linked system libraries.
     // Zig modules are the preferred way of making Zig code available to consumers.
@@ -46,6 +51,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
     mod.addImport("mr_ecs", mr_ecs_dep.module("mr_ecs"));
+    mod.addImport("zlua", zlua_dep.module("zlua"));
 
     // Here we define an executable. An executable needs to have a root module
     // which needs to expose a `main` function. While we could add a main function
@@ -88,7 +94,6 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    exe.root_module.addImport("mr_ecs", mr_ecs_dep.module("mr_ecs"));
 
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default

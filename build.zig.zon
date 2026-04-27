@@ -36,6 +36,10 @@
             .url = "git+https://codeberg.org/Games-by-Mason/mr_ecs#04bd50a42c8af5998470bec7d90f39774f317e5e",
             .hash = "mr_ecs-0.1.1-RsdJ_bfOAwABn5k4YH5_wd6kUW1nNqbqSfBiaUixB3Gx",
         },
+        .zlua = .{
+            .url = "git+https://github.com/natecraddock/ziglua#74cb4f86cd8008b1ee7a7c8fa2a29da58de7f1fa",
+            .hash = "zlua-0.1.0-hGRpC1B-BQAKAx0m9dmZZuwKZvaylK2CMTkvlEfPsFst",
+        },
     },
     .paths = .{
         "build.zig",
