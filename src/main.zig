@@ -10,13 +10,6 @@ pub fn main(init: std.process.Init) !void {
 
     var world = try dragoon.db.World.init(allocator);
     defer world.deinit();
-
-    try world.loadRaces(init.io, "data/lua/race");
-
-    var race_iter = world.races.valueIterator();
-    while (race_iter.next()) |race| {
-        std.debug.print("loaded race: {s} ({s})\n", .{ race.id, race.name });
-    }
 }
 
 test "simple test" {
