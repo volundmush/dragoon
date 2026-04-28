@@ -11,9 +11,12 @@ pub fn main(init: std.process.Init) !void {
     var world = try dragoon.db.World.init(allocator);
     defer world.deinit();
 
-    // Add an integer to the Lua stack and retrieve it
-    world.lua.pushInteger(42);
-    std.debug.print("{}\n", .{try world.lua.toInteger(1)});
+    try world.loadRaces(init.io, "data/lua/race");
+
+    var race_iter = world.races.valueIterator();
+    while (race_iter.next()) |race| {
+        std.debug.print("loaded race: {s} ({s})\n", .{ race.id, race.name });
+    }
 }
 
 test "simple test" {
