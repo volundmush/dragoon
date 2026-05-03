@@ -1,3 +1,6 @@
 .zig-cache/
 zig-out/
 zig-pkg/
+.env.local
+deno.lock
+node_modules/

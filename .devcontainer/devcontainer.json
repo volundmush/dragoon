@@ -1,0 +1,41 @@
+{
+  "name": "dragoon",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/dragoon",
+  "features": {
+    "ghcr.io/devcontainers/features/deno:1": {
+      "version": "latest"
+    }
+  },
+  "forwardPorts": [8000, 8080],
+  "portsAttributes": {
+    "8000": {
+      "label": "SurrealDB"
+    },
+    "8080": {
+      "label": "SurrealMCP"
+    }
+  },
+  "containerEnv": {
+    "SURREALDB_URL": "ws://surrealdb:8000/rpc",
+    "SURREALDB_HTTP_URL": "http://surrealdb:8000",
+    "SURREALDB_NS": "dragoon",
+    "SURREALDB_DB": "dev",
+    "SURREALDB_USER": "root",
+    "SURREALDB_PASS": "root",
+    "SURREAL_MCP_SERVER_URL": "http://surrealmcp:8080"
+  },
+  "postCreateCommand": "deno cache main.ts && deno test",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "denoland.vscode-deno"
+      ],
+      "settings": {
+        "deno.enable": true,
+        "deno.lint": true
+      }
+    }
+  }
+}

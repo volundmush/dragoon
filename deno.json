@@ -1,6 +1,14 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run --watch main.ts",
+    "check": "deno fmt --check && deno lint && deno test",
+    "db:up": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" up -d surrealdb surrealmcp'",
+    "db:down": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" down'",
+    "db:logs": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" logs -f surrealdb surrealmcp'",
+    "db:version": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" exec -T surrealdb /surreal version'",
+    "db:ready": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" exec -T surrealdb /surreal is-ready --endpoint ws://localhost:8000'",
+    "db:sql": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" exec -T surrealdb /surreal sql --endpoint ws://localhost:8000'",
+    "mcp:logs": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" logs -f surrealmcp'"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1"

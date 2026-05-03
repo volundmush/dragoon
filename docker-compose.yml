@@ -1,0 +1,37 @@
+services:
+  surrealdb:
+    image: ${SURREALDB_IMAGE:-surrealdb/surrealdb:v3}
+    user: root
+    command: start
+    env_file:
+      - path: ./.env
+        required: true
+      - path: ./.env.local
+        required: false
+    ports:
+      - "${SURREALDB_PORT:-8000}:8000"
+    volumes:
+      - surrealdb-data:/data
+    healthcheck:
+      test: ["CMD", "/surreal", "is-ready", "--endpoint", "ws://localhost:8000"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+  surrealmcp:
+    image: ${SURREALMCP_IMAGE:-surrealdb/surrealmcp:latest}
+    command: start
+    env_file:
+      - path: ./.env
+        required: true
+      - path: ./.env.local
+        required: false
+    ports:
+      - "${SURREALMCP_PORT:-8080}:8080"
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+
+volumes:
+  surrealdb-data:
