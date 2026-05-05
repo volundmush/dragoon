@@ -4,3 +4,4 @@ zig-pkg/
 .env.local
 deno.lock
 node_modules/
+data

@@ -4,15 +4,19 @@
     "check": "deno fmt --check && deno lint && deno test",
     "db:up": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" up -d surrealdb surrealmcp'",
     "db:down": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" down'",
+    "db:reset": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" down -v --remove-orphans'",
     "db:logs": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" logs -f surrealdb surrealmcp'",
     "db:version": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" exec -T surrealdb /surreal version'",
     "db:ready": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" exec -T surrealdb /surreal is-ready --endpoint ws://localhost:8000'",
     "db:sql": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" exec -T surrealdb /surreal sql --endpoint ws://localhost:8000'",
+    "db:migrate": "bash -lc 'args=(--env-file=.env); [ -f .env.local ] && args+=(--env-file=.env.local); deno run --allow-read --allow-env --allow-net \"${args[@]}\" scripts/migrate.ts'",
     "mcp:logs": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" logs -f surrealmcp'"
   },
   "imports": {
     "@dragoon/": "./src/",
     "@defs/": "./def/",
+    "@legacy/": "./legacy/",
+    "@scripts/": "./scripts/",
     "@std/assert": "jsr:@std/assert@1",
     "@surrealdb/surrealdb": "npm:surrealdb@^2.0.3"
   }
