@@ -1,4 +1,4 @@
-import { StatDefInput } from "@dragoon/defs/character.ts";
+import type { StatDefInput } from "@dragoon/defs/character.ts";
 
 export default {
   id: "will",

@@ -1,4 +1,4 @@
-import { DerivedDefInput } from "@dragoon/defs/character.ts";
+import type { DerivedDefInput } from "@dragoon/defs/character.ts";
 
 export default {
   id: "presence",

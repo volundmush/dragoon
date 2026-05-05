@@ -1,7 +1,7 @@
-import {MeterDefInput} from "@dragoon/defs/character.ts";
+import type { MeterDefInput } from "@dragoon/defs/character.ts";
 
 export default {
   id: "health",
   name: "Health",
-  of: "health"
+  of: "health",
 } as MeterDefInput;

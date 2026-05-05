@@ -1,15 +1,5 @@
 import { DefLoader } from "@dragoon/defs/base.ts";
-import { RecordId } from "@surrealdb/surrealdb";
-
-type CharacterData = {
-  id: RecordId<"character">;
-  stats: Record<string, number>;
-  [key: string]: unknown;
-};
-
-export class Character {
-  constructor(public data: CharacterData) {}
-}
+import type { Character } from "@dragoon/types/character.ts";
 
 export type StatDefInput = {
   id: string;
