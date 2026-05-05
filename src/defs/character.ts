@@ -1,3 +1,4 @@
+import { DefLoader } from "@dragoon/defs/base.ts";
 import { RecordId } from "@surrealdb/surrealdb";
 
 type CharacterData = {
@@ -9,10 +10,6 @@ type CharacterData = {
 export class Character {
   constructor(public data: CharacterData) {}
 }
-
-type DefModule = {
-  default?: unknown;
-};
 
 export type StatDefInput = {
   id: string;
@@ -75,6 +72,58 @@ export class DerivedDef {
     this.tags = input.tags ?? [];
     this.base = input.base;
     this.effective = input.effective;
+  }
+}
+
+export type MeterDefInput = {
+  id: string;
+  name?: string;
+  of: string;
+};
+export class MeterDef {
+  readonly id: string;
+  readonly name: string;
+  readonly of: string;
+
+  constructor(input: MeterDefInput) {
+    this.id = input.id;
+    this.name = input.name ?? input.id;
+    this.of = input.of;
+  }
+}
+
+export type FormDefInput = {
+  id: string;
+  name?: string;
+  tags?: string[];
+};
+
+export class FormDef {
+  readonly id: string;
+  readonly name: string;
+  readonly tags: readonly string[];
+
+  constructor(input: FormDefInput) {
+    this.id = input.id;
+    this.name = input.name ?? input.id;
+    this.tags = input.tags ?? [];
+  }
+}
+
+export type ConditionDefInput = {
+  id: string;
+  name?: string;
+  tags?: string[];
+};
+export class ConditionDef {
+  readonly id: string;
+  readonly name: string;
+  readonly tags: readonly string[];
+
+  constructor(input: ConditionDefInput) {
+    this.id = input.id;
+    this.name = input.name ?? input.id;
+    this.tags = input.tags ?? [];
   }
 }
 
@@ -159,118 +208,66 @@ export class CommandDef {
   }
 }
 
+export type ScriptDefInput = {
+  id: string;
+  name?: string;
+};
 export class ScriptDef {
+  readonly id: string;
+  readonly name: string;
+
+  constructor(input: ScriptDefInput) {
+    this.id = input.id;
+    this.name = input.name ?? input.id;
+  }
 }
 
-export class CharacterDefs {
+export type SkillDefInput = {
+  id: string;
+  name?: string;
+  tags?: string[];
+};
+export class SkillDef {
+  readonly id: string;
+  readonly name: string;
+  readonly tags: readonly string[];
+
+  constructor(input: SkillDefInput) {
+    this.id = input.id;
+    this.name = input.name ?? input.id;
+    this.tags = input.tags ?? [];
+  }
+}
+
+export class CharacterDefs extends DefLoader {
   public stats: Record<string, StatDef> = {};
   public derived: Record<string, DerivedDef> = {};
+  public meters: Record<string, MeterDef> = {};
+  public forms: Record<string, FormDef> = {};
+  public conditions: Record<string, ConditionDef> = {};
   public natures: Record<string, NatureDef> = {};
   public lineages: Record<string, LineageDef> = {};
   public traits: Record<string, TraitDef> = {};
   public commands: Record<string, CommandDef> = {};
   public scripts: Record<string, ScriptDef> = {};
+  public skills: Record<string, SkillDef> = {};
 
-  constructor() {}
-
-  async loadFromFolder(path: string): Promise<void> {
+  override async loadFromFolder(path: string): Promise<void> {
     const root = path.startsWith("/") ? path : `${Deno.cwd()}/${path}`;
 
-    for await (const file of this.walkDefFiles(root)) {
-      const relative = file.slice(root.length + 1);
-      const [category] = relative.split("/");
-      const input = await this.importDefault(file);
-
-      switch (category) {
-        case "stat":
-          this.addDef(this.stats, new StatDef(input as StatDefInput), file);
-          break;
-        case "derived":
-          this.addDef(
-            this.derived,
-            new DerivedDef(input as DerivedDefInput),
-            file,
-          );
-          break;
-        case "nature":
-          this.addDef(
-            this.natures,
-            new NatureDef(input as NatureDefInput),
-            file,
-          );
-          break;
-        case "lineage":
-          this.addDef(
-            this.lineages,
-            new LineageDef(input as LineageDefInput),
-            file,
-          );
-          break;
-        case "trait":
-          this.addDef(this.traits, new TraitDef(input as TraitDefInput), file);
-          break;
-        case "command":
-          this.addDef(
-            this.commands,
-            new CommandDef(input as CommandDefInput),
-            file,
-          );
-          break;
-        case "script":
-          throw new Error(`Script defs are not implemented yet: ${file}`);
-        default:
-          throw new Error(
-            `Unknown character def category '${category}' in ${file}`,
-          );
-      }
-    }
-  }
-
-  private async *walkDefFiles(path: string): AsyncGenerator<string> {
-    for await (const entry of Deno.readDir(path)) {
-      if (entry.name.startsWith("_")) {
-        continue;
-      }
-
-      const child = `${path}/${entry.name}`;
-
-      if (entry.isDirectory) {
-        yield* this.walkDefFiles(child);
-        continue;
-      }
-
-      if (
-        entry.isFile &&
-        (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))
-      ) {
-        yield child;
-      }
-    }
-  }
-
-  private async importDefault(path: string): Promise<unknown> {
-    const module = await import(`file://${path}`) as DefModule;
-
-    if (module.default === undefined) {
-      throw new Error(`Def file must export default: ${path}`);
-    }
-
-    return module.default;
-  }
-
-  private addDef<TDef extends { id: string }>(
-    registry: Record<string, TDef>,
-    def: TDef,
-    path: string,
-  ): void {
-    if (!def.id) {
-      throw new Error(`Def is missing required id: ${path}`);
-    }
-
-    if (registry[def.id]) {
-      throw new Error(`Duplicate character def id '${def.id}' from ${path}`);
-    }
-
-    registry[def.id] = def;
+    await this.loadSubFolder(`${root}/stat`, StatDef, this.stats);
+    await this.loadSubFolder(`${root}/derived`, DerivedDef, this.derived);
+    await this.loadSubFolder(`${root}/meter`, MeterDef, this.meters);
+    await this.loadSubFolder(`${root}/form`, FormDef, this.forms);
+    await this.loadSubFolder(
+      `${root}/condition`,
+      ConditionDef,
+      this.conditions,
+    );
+    await this.loadSubFolder(`${root}/nature`, NatureDef, this.natures);
+    await this.loadSubFolder(`${root}/lineage`, LineageDef, this.lineages);
+    await this.loadSubFolder(`${root}/trait`, TraitDef, this.traits);
+    await this.loadSubFolder(`${root}/command`, CommandDef, this.commands);
+    await this.loadSubFolder(`${root}/skill`, SkillDef, this.skills);
   }
 }

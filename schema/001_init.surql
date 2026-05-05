@@ -13,8 +13,8 @@ DEFINE TABLE OVERWRITE game_session SCHEMALESS;
 
 -- With major types defined, now we can define fields and indexes...
 -- USER
-DEFINE FIELD OVERWRITE email On user TYPE string VALUE $value.lower() ASSERT string::is::email($value);
-DEFINE FIELD OVERWRITE password_hash On user TYPE string;
+DEFINE FIELD OVERWRITE email ON user TYPE string VALUE $value.lower() ASSERT string::is::email($value);
+DEFINE FIELD OVERWRITE password_hash ON user TYPE string;
 DEFINE FIELD OVERWRITE components ON user TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE components.* ON user TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();

@@ -28,7 +28,7 @@ async function execute(
   context: CommandContext,
 ): Promise<void> {
   // TODO: implement
-};
+}
 
 export default {
   id: "go",

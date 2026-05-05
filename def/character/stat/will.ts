@@ -1,6 +1,8 @@
+import { StatDefInput } from "@dragoon/defs/character.ts";
+
 export default {
   id: "will",
   name: "Will",
-  min: 1,
+  min: 1000,
   tags: ["attribute"],
-};
+} satisfies StatDefInput;
