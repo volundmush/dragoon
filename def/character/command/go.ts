@@ -6,7 +6,6 @@ import type {
 const aliases = {
   go: 2,
   move: 2,
-  walk: 2,
 
   north: 1,
   south: 1,
@@ -25,7 +24,7 @@ const aliases = {
 };
 
 async function execute(
-  context: CommandContext,
+  _context: CommandContext,
 ): Promise<void> {
   // TODO: implement
 }

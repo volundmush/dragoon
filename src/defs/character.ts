@@ -1,5 +1,6 @@
 import { DefLoader } from "@dragoon/defs/base.ts";
 import type { Character } from "@dragoon/types/character.ts";
+import { loadDefFolder } from "@dragoon/utils/defs.ts";
 
 export type StatDefInput = {
   id: string;
@@ -245,19 +246,18 @@ export class CharacterDefs extends DefLoader {
   override async loadFromFolder(path: string): Promise<void> {
     const root = path.startsWith("/") ? path : `${Deno.cwd()}/${path}`;
 
-    await this.loadSubFolder(`${root}/stat`, StatDef, this.stats);
-    await this.loadSubFolder(`${root}/derived`, DerivedDef, this.derived);
-    await this.loadSubFolder(`${root}/meter`, MeterDef, this.meters);
-    await this.loadSubFolder(`${root}/form`, FormDef, this.forms);
-    await this.loadSubFolder(
+    this.stats = await loadDefFolder(`${root}/stat`, StatDef);
+    this.derived = await loadDefFolder(`${root}/derived`, DerivedDef);
+    this.meters = await loadDefFolder(`${root}/meter`, MeterDef);
+    this.forms = await loadDefFolder(`${root}/form`, FormDef);
+    this.conditions = await loadDefFolder(
       `${root}/condition`,
       ConditionDef,
-      this.conditions,
     );
-    await this.loadSubFolder(`${root}/nature`, NatureDef, this.natures);
-    await this.loadSubFolder(`${root}/lineage`, LineageDef, this.lineages);
-    await this.loadSubFolder(`${root}/trait`, TraitDef, this.traits);
-    await this.loadSubFolder(`${root}/command`, CommandDef, this.commands);
-    await this.loadSubFolder(`${root}/skill`, SkillDef, this.skills);
+    this.natures = await loadDefFolder(`${root}/nature`, NatureDef);
+    this.lineages = await loadDefFolder(`${root}/lineage`, LineageDef);
+    this.traits = await loadDefFolder(`${root}/trait`, TraitDef);
+    this.commands = await loadDefFolder(`${root}/command`, CommandDef);
+    this.skills = await loadDefFolder(`${root}/skill`, SkillDef);
   }
 }
