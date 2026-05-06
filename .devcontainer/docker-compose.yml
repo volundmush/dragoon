@@ -37,7 +37,18 @@ services:
 
   surrealmcp:
     image: ${SURREALMCP_IMAGE:-surrealdb/surrealmcp:latest}
-    command: start
+    command:
+      - start
+      - --endpoint
+      - ${SURREALDB_URL:-ws://surrealdb:8000/rpc}
+      - --ns
+      - ${SURREALDB_NS:-dragoon}
+      - --db
+      - ${SURREALDB_DB:-dev}
+      - --user
+      - ${SURREALDB_USER:-root}
+      - --pass
+      - ${SURREALDB_PASS:-root}
     env_file:
       - path: ../.env
         required: true

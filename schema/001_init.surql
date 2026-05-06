@@ -190,14 +190,14 @@ DEFINE INDEX OVERWRITE unique_location_subject
 DEFINE FUNCTION OVERWRITE fn::get_contents($thing: record) -> array<record> {
     RETURN SELECT VALUE in
       FROM located_in
-      WHERE out == $thing.id AND in.slots == NONE;
+      WHERE out == $thing AND in.slots == NONE;
 };
 
 DEFINE FUNCTION OVERWRITE fn::get_equipment($thing: record) -> object {
     -- Scan all items located_in $thing, create a map for all with an equipped slot and return <slot, record> object.
     LET $items = SELECT in,in.slots
       FROM located_in
-      WHERE out == $thing.id AND in.slots != NONE;
+      WHERE out == $thing AND in.slots != NONE;
     RETURN object::from_entries(
   $items
     .map(|$item| {
@@ -217,7 +217,7 @@ DEFINE FIELD OVERWRITE inventory ON character COMPUTED fn::get_contents($this.id
 DEFINE FIELD OVERWRITE inventory ON structure COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
 DEFINE FIELD OVERWRITE inventory ON item COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
 
-DEFINE FIELD OVERWRITE contents ON room COMPUTED fn::get_contents($this) TYPE array<record<item>>;
+DEFINE FIELD OVERWRITE contents ON room COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
 
 
 

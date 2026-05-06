@@ -103,3 +103,19 @@ docker run --rm -i --pull always \
 
 Use `host.docker.internal` when the MCP container is launched outside the
 Compose network and needs to reach SurrealDB through the host-published port.
+
+### Current SurrealDB 3 Compatibility Note
+
+As of `surrealdb/surrealmcp:latest` reporting `surrealmcp 0.4.0`, the MCP HTTP
+server starts and OpenCode can connect to it, but database tool calls against
+`surrealdb/surrealdb:v3` fail during the SurrealDB client connection step with:
+
+```txt
+WebSocket protocol error: SubProtocol error: Server sent no subprotocol
+```
+
+The published SurrealMCP 0.4.0 source depends on the SurrealDB Rust client
+`2.3.7`, so this appears to be a SurrealDB 3 protocol compatibility issue in
+SurrealMCP rather than a project configuration issue. Keep using the Deno
+migration tasks and SDK for now; revisit MCP database tool usage when SurrealMCP
+ships a SurrealDB 3-compatible release.
