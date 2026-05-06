@@ -5,4 +5,7 @@ export default {
   name: "Might",
   min: 1000,
   tags: ["attribute"],
+  base: ({ character, base }) => {
+    return character.stat_get("might");
+  }
 } satisfies DerivedDefInput;

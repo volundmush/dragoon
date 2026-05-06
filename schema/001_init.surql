@@ -9,7 +9,10 @@ DEFINE TABLE OVERWRITE npc_prototype SCHEMALESS;
 DEFINE TABLE OVERWRITE item_prototype SCHEMALESS;
 DEFINE TABLE OVERWRITE structure_prototype SCHEMALESS;
 
+DEFINE TABLE OVERWRITE commodity SCHEMALESS;
+
 DEFINE TABLE OVERWRITE game_session SCHEMALESS;
+DEFINE TABLE OVERWRITE game_event SCHEMALESS;
 
 -- With major types defined, now we can define fields and indexes...
 -- USER
@@ -20,6 +23,7 @@ DEFINE FIELD OVERWRITE components.* ON user TYPE object;
 DEFINE FIELD OVERWRITE created_at ON user TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at ON user TYPE datetime DEFAULT time::now() VALUE time::now();
 DEFINE FIELD OVERWRITE tags ON user TYPE set<string> DEFAULT <set>[];
+DEFINE FIELD OVERWRITE admin_level ON user TYPE int DEFAULT 0;
 
 DEFINE INDEX OVERWRITE unique_email
   ON user
@@ -175,6 +179,28 @@ DEFINE FIELD OVERWRITE tags ON zone TYPE set<string> DEFAULT <set>[];
 DEFINE FIELD OVERWRITE scripts ON zone TYPE object DEFAULT {};
 DEFINE FIELD OVERWRITE scripts.* ON zone TYPE object;
 
+-- Commodities
+DEFINE FIELD OVERWRITE name ON commodity TYPE string;
+DEFINE FIELD OVERWRITE description ON commodity TYPE option<string> DEFAULT NONE;
+DEFINE FIELD OVERWRITE keywords ON commodity TYPE option<set<string>> DEFAULT NONE;
+DEFINE FIELD OVERWRITE components ON commodity TYPE object DEFAULT {};
+DEFINE FIELD OVERWRITE components.* ON commodity TYPE object;
+DEFINE FIELD OVERWRITE stats ON commodity TYPE object DEFAULT {};
+DEFINE FIELD OVERWRITE stats.* ON commodity TYPE int;
+DEFINE FIELD OVERWRITE created_at ON commodity TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at ON commodity TYPE datetime DEFAULT time::now() VALUE time::now();
+DEFINE FIELD OVERWRITE tags ON commodity TYPE set<string> DEFAULT <set>[];
+
+-- Commodities Relation
+DEFINE TABLE OVERWRITE has_commodity SCHEMALESS TYPE RELATION IN character|item|structure|room OUT commodity ENFORCED;
+DEFINE FIELD OVERWRITE amount ON has_commodity TYPE int DEFAULT 1 ASSERT $value > 0;
+DEFINE FIELD OVERWRITE created_at ON has_commodity TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at ON has_commodity TYPE datetime DEFAULT time::now() VALUE time::now();
+
+DEFINE INDEX OVERWRITE unique_commodity_subject
+  ON has_commodity
+  COLUMNS in, out
+  UNIQUE;
 
 -- Location relation.
 DEFINE TABLE OVERWRITE located_in SCHEMALESS TYPE RELATION IN character|item|structure OUT room|structure|character|item ENFORCED;
@@ -187,17 +213,53 @@ DEFINE INDEX OVERWRITE unique_location_subject
   COLUMNS in
   UNIQUE;
 
-DEFINE FUNCTION OVERWRITE fn::get_contents($thing: record) -> array<record> {
+DEFINE FUNCTION OVERWRITE fn::get_at_location($thing: record, tb: string) -> array<record> {
     RETURN SELECT VALUE in
       FROM located_in
-      WHERE out == $thing AND in.slots == NONE;
+      WHERE out == $thing AND type::table(in) == tb;
+};
+
+DEFINE FUNCTION OVERWRITE fn::get_inventory($thing: record) -> array<record<item>> {
+    RETURN SELECT VALUE in
+      FROM located_in
+      WHERE out == $thing AND type::table(in) == "item" AND slots == NONE;
+};
+
+DEFINE FUNCTION OVERWRITE fn::get_contents($thing: record) -> array<record<item|character|structure>> {
+  RETURN SELECT VALUE in FROM
+    located_in
+    WHERE out == $thing AND in.is_active == true;
+};
+
+DEFINE FUNCTION OVERWRITE fn::is_npc($character: record<character>) -> bool {
+  LET $pc = SELECT VALUE id FROM pc WHERE in == $character LIMIT 1;
+  RETURN $pc.len() == 0;
+};
+
+DEFINE FUNCTION OVERWRITE fn::is_character_active($character: record<character>) -> bool {
+  LET $sessions = SELECT VALUE id
+    FROM game_session
+    WHERE character == $character OR puppet == $character
+    LIMIT 1;
+
+  RETURN fn::is_npc($character) OR $sessions.len() > 0;
+};
+
+DEFINE FUNCTION OVERWRITE fn::is_item_active($item: record<item>) -> bool {
+  LET $holder = SELECT VALUE holder FROM ONLY $item;
+
+  IF $holder == NONE {
+    RETURN true;
+  };
+
+  RETURN fn::is_character_active($holder);
 };
 
 DEFINE FUNCTION OVERWRITE fn::get_equipment($thing: record) -> object {
     -- Scan all items located_in $thing, create a map for all with an equipped slot and return <slot, record> object.
-    LET $items = SELECT in,in.slots
+    LET $items = SELECT in, slots
       FROM located_in
-      WHERE out == $thing AND in.slots != NONE;
+      WHERE out == $thing AND type::table(in) == "item" AND slots != NONE;
     RETURN object::from_entries(
   $items
     .map(|$item| {
@@ -213,12 +275,31 @@ DEFINE FIELD OVERWRITE equipment ON character COMPUTED fn::get_equipment($this.i
 DEFINE FIELD OVERWRITE equipment ON item COMPUTED fn::get_equipment($this.id) TYPE object;
 DEFINE FIELD OVERWRITE equipment ON structure COMPUTED fn::get_equipment($this.id) TYPE object;
 
-DEFINE FIELD OVERWRITE inventory ON character COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
-DEFINE FIELD OVERWRITE inventory ON structure COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
-DEFINE FIELD OVERWRITE inventory ON item COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
+DEFINE FIELD OVERWRITE is_npc ON character COMPUTED fn::is_npc($this.id) TYPE bool;
+DEFINE FIELD OVERWRITE is_active ON character COMPUTED fn::is_character_active($this.id) TYPE bool;
+DEFINE FIELD OVERWRITE is_active ON item COMPUTED fn::is_item_active($this.id) TYPE bool;
+DEFINE FIELD OVERWRITE is_active ON structure COMPUTED true TYPE bool;
 
-DEFINE FIELD OVERWRITE contents ON room COMPUTED fn::get_contents($this.id) TYPE array<record<item>>;
+DEFINE FIELD OVERWRITE inventory ON character COMPUTED fn::get_inventory($this.id) TYPE array<record<item>>;
+DEFINE FIELD OVERWRITE inventory ON structure COMPUTED fn::get_inventory($this.id) TYPE array<record<item>>;
+DEFINE FIELD OVERWRITE inventory ON item COMPUTED fn::get_inventory($this.id) TYPE array<record<item>>;
+
+DEFINE FIELD OVERWRITE contents ON room COMPUTED fn::get_contents($this.id) TYPE array<record<item|character|structure>>;
 
 
 
--- Events and Session stuff below this.
+-- Session stuff.
+DEFINE FIELD OVERWRITE character ON game_session TYPE record<character> REFERENCE ON DELETE CASCADE;
+DEFINE FIELD OVERWRITE puppet ON game_session TYPE record<character> REFERENCE ON DELETE CASCADE;
+DEFINE FIELD OVERWRITE user ON game_session TYPE record<user> REFERENCE ON DELETE CASCADE;
+DEFINE FIELD OVERWRITE started_at ON game_session TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE active_at ON game_session TYPE datetime DEFAULT time::now();
+
+DEFINE FIELD OVERWRITE sessions ON user COMPUTED <~ game_session;
+DEFINE FIELD OVERWRITE sessions ON character COMPUTED <~ game_session;
+
+-- Game events
+DEFINE FIELD OVERWRITE kind ON game_event TYPE string;
+DEFINE FIELD OVERWRITE payload ON game_event TYPE object DEFAULT {};
+DEFINE FIELD OVERWRITE created_at ON game_event TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE handled_at ON game_event TYPE option<datetime> DEFAULT NONE;

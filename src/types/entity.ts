@@ -17,7 +17,7 @@ export class Entity<
   TData extends EntityData<TTable>,
 > {
   constructor(
-    protected readonly ctx: EntityContext,
+    public readonly ctx: EntityContext,
     public data: TData,
   ) {}
 
