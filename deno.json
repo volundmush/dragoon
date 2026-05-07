@@ -15,8 +15,12 @@
     "mcp:logs": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" logs -f surrealmcp'"
   },
   "imports": {
-    "@dragoon/": "./src/",
+    "@dragoon/": "./core/",
     "@defs/": "./def/",
+    "@portal/": "./portal/",
+    "@engine/": "./engine/",
+    "@termgate/": "./termgate/",
+    "@auth/": "./auth/",
     "@legacy/": "./legacy/",
     "@scripts/": "./scripts/",
     "@std/assert": "jsr:@std/assert@1",
