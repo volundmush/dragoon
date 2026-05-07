@@ -52,7 +52,16 @@ export class Character extends Entity<"character", CharacterData> {
     if (!def) {
       throw new Error(`Stat '${stat}' is not defined`);
     }
-    return this.data.stats[stat] ?? def.default ?? 0;
+
+    let value = this.data.stats[stat] ?? def.default ?? 0;
+    if(def.min !== undefined && value < def.min) {
+      value = def.min;
+    }
+    if(def.max !== undefined && value > def.max) {
+      value = def.max;
+    }
+
+    return value;
   }
 
   async stat_set(stat: string, value: number): Promise<number> {

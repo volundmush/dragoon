@@ -36,4 +36,8 @@ export class Entity<
   protected get now(): Date {
     return this.ctx.now;
   }
+
+  async onCreate(): Promise<void> {}
+
+  async onSpawn(): Promise<void> {}
 }
