@@ -2,6 +2,7 @@
 zig-out/
 zig-pkg/
 .env.local
+.certs/
 deno.lock
 node_modules/
 data

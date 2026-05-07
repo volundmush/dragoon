@@ -12,6 +12,10 @@
     "db:migrate": "bash -lc 'args=(--env-file=.env); [ -f .env.local ] && args+=(--env-file=.env.local); deno run --allow-read --allow-env --allow-net \"${args[@]}\" scripts/migrate.ts'",
     "db:legacy": "bash -lc 'args=(--env-file=.env); [ -f .env.local ] && args+=(--env-file=.env.local); deno run --allow-read --allow-env --allow-net \"${args[@]}\" scripts/importer.ts'",
     "repl": "bash -lc 'args=(); [ -f .env.local ] && args+=(--env-file=.env.local); args+=(--env-file=.env); deno repl --allow-read --allow-env --allow-net \"${args[@]}\" --eval-file scripts/repl.ts'",
+    "engine": "bash -lc 'args=(); [ -f .env.local ] && args+=(--env-file=.env.local); args+=(--env-file=.env); deno run --allow-read --allow-env --allow-net \"${args[@]}\" engine/main.ts'",
+    "auth": "bash -lc 'args=(); [ -f .env.local ] && args+=(--env-file=.env.local); args+=(--env-file=.env); deno run --allow-read --allow-env --allow-net \"${args[@]}\" auth/main.ts'",
+    "portal": "bash -lc 'args=(); [ -f .env.local ] && args+=(--env-file=.env.local); args+=(--env-file=.env); deno run --allow-read --allow-env --allow-net \"${args[@]}\" portal/main.ts'",
+    "termgate": "bash -lc 'args=(); [ -f .env.local ] && args+=(--env-file=.env.local); args+=(--env-file=.env); deno run --allow-read --allow-env --allow-net \"${args[@]}\" termgate/main.ts'",
     "mcp:logs": "bash -lc 'args=(--env-file .env); [ -f .env.local ] && args+=(--env-file .env.local); docker compose \"${args[@]}\" logs -f surrealmcp'"
   },
   "imports": {
