@@ -1,7 +1,7 @@
 import type { Surreal, SurrealTransaction } from "@surrealdb/surrealdb";
 import { DbContext } from "./db.ts";
 import type { DefsContext } from "./defs.ts";
-import type { EntityContext } from "./types/base.ts";
+import type { EntityContext } from "./types/entity.ts";
 
 export type OperationEvent = {
   type: string;

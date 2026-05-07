@@ -3,7 +3,7 @@ import {
   Entity,
   type EntityContext,
   type EntityData,
-} from "@dragoon/types/base.ts";
+} from "@dragoon/types/entity.ts";
 
 export type RoomData = EntityData<"room"> & {
   id: RecordId<"room">;
